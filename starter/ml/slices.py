@@ -87,4 +87,6 @@ def write_slice_output(
     """Write header comments and one formatted line per slice to path."""
     lines = [f"# {line}" for line in header_lines]
     lines.extend(format_slice_line(row) for row in rows)
-    Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")

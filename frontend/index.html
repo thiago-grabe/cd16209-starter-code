@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Census income estimate</title>
+<style>
+  :root {
+    --paper: #eef1f4;
+    --sheet: #ffffff;
+    --ink: #16243a;
+    --rule: #aeb9c6;
+    --muted: #5c6b7e;
+    --steel: #2e5c8a;
+    --steel-soft: #dce6f2;
+    --error: #9b2c2c;
+    --error-soft: #f7e4e4;
+    --radius: 3px;
+    --font: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  body { margin: 0; padding: 32px 20px 48px; }
+  .sheet {
+    max-width: 980px;
+    margin: 0 auto;
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+  }
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    padding: 28px 32px 20px;
+    border-bottom: 2px solid var(--ink);
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .lede { margin: 0; max-width: 56ch; color: var(--muted); }
+  .form-id {
+    margin: 0;
+    text-align: right;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .form-id strong { display: block; color: var(--ink); font-size: 15px; }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  }
+  .questionnaire {
+    padding: 24px 32px 32px;
+    border-right: 1px solid var(--rule);
+  }
+  .result-panel {
+    padding: 24px 28px 32px;
+    position: sticky;
+    top: 24px;
+    align-self: start;
+  }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  button { font: inherit; cursor: pointer; border-radius: var(--radius); }
+  .btn-secondary {
+    background: var(--sheet);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 7px 12px;
+  }
+  .btn-secondary:hover { background: var(--steel-soft); }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+    border: 1px solid var(--ink);
+    padding: 11px 18px;
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .btn-primary:hover { background: var(--steel); border-color: var(--steel); }
+  .btn-primary[disabled] { opacity: 0.6; cursor: progress; }
+  fieldset { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
+  legend { font-size: 17px; font-weight: 700; padding: 0; margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field.wide { grid-column: 1 / -1; }
+  label { display: flex; align-items: baseline; gap: 8px; }
+  label .q { color: var(--muted); font-size: 13px; min-width: 1.4em; }
+  label .alias { color: var(--muted); font-size: 13px; margin-left: auto; }
+  input, select {
+    font: inherit;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    width: 100%;
+  }
+  input:focus-visible, select:focus-visible,
+  button:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 3px solid var(--steel);
+    outline-offset: 2px;
+  }
+  .field.invalid input, .field.invalid select {
+    border-color: var(--error);
+    background: var(--error-soft);
+  }
+  .help { color: var(--muted); font-size: 13px; }
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+  .result-panel h2 { margin: 0 0 14px; font-size: 17px; }
+  .placeholder { color: var(--muted); margin: 0; }
+  .stamp-wrap { display: flex; justify-content: center; padding: 18px 0 10px; }
+  .stamp {
+    display: inline-block;
+    border: 3px solid var(--ink);
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1.1;
+    transform: rotate(-4deg);
+  }
+  .stamp.pressed { animation: press 0.22s ease-out; }
+  @keyframes press {
+    from { transform: rotate(-4deg) scale(1.12); opacity: 0.4; }
+    to { transform: rotate(-4deg) scale(1); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stamp.pressed { animation: none; }
+  }
+  .meter { margin-top: 18px; }
+  .meter-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .meter-label strong {
+    color: var(--ink);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar {
+    position: relative;
+    height: 14px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    margin-top: 6px;
+  }
+  .bar .fill { height: 100%; background: var(--steel); width: 0; }
+  .bar .tick {
+    position: absolute;
+    left: 50%;
+    top: -4px;
+    bottom: -4px;
+    border-left: 2px solid var(--ink);
+  }
+  .bar-caption { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+  details { margin-top: 18px; font-size: 13px; }
+  summary { cursor: pointer; color: var(--steel); }
+  pre {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 10px;
+    overflow: auto;
+    font-size: 12.5px;
+  }
+  .error {
+    border-left: 4px solid var(--error);
+    background: var(--error-soft);
+    padding: 12px 14px;
+    margin: 0 0 14px;
+  }
+  .error p { margin: 0 0 6px; }
+  .error ul { margin: 0; padding-left: 18px; }
+  footer {
+    padding: 16px 32px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  a { color: var(--steel); }
+  @media (max-width: 760px) {
+    body { padding: 12px; }
+    .masthead {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px 20px 16px;
+    }
+    .form-id { text-align: left; white-space: normal; }
+    .layout { grid-template-columns: 1fr; }
+    .questionnaire {
+      border-right: 0;
+      border-bottom: 1px solid var(--rule);
+      padding: 20px;
+    }
+    .result-panel { position: static; padding: 20px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="masthead">
+    <div>
+      <h1>Census income estimate</h1>
+      <p class="lede">Answer the fourteen questions as recorded in the 1994
+        Census sample, then estimate whether yearly income is over 50K.</p>
+    </div>
+    <p class="form-id"><strong>Form CI-1</strong>Served by FastAPI at /ui<br>
+      Predictions use the saved model in model/</p>
+  </header>
+
+  <div class="layout">
+    <form id="predict-form" class="questionnaire" novalidate>
+      <div class="examples">
+        <button type="button" class="btn-secondary" data-example="high_income">
+          Load example: earns more than 50K</button>
+        <button type="button" class="btn-secondary" data-example="low_income">
+          Load example: earns 50K or less</button>
+      </div>
+
+      <fieldset>
+        <legend>About the person</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="f-age"><span class="q">1</span>Age
+              <span class="alias" aria-hidden="true">age</span></label>
+            <input id="f-age" name="age" type="number" min="0" max="120"
+              inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="f-sex"><span class="q">2</span>Sex
+              <span class="alias" aria-hidden="true">sex</span></label>
+            <select id="f-sex" name="sex" required></select>
+          </div>
+          <div class="field">
+            <label for="f-race"><span class="q">3</span>Race
+              <span class="alias" aria-hidden="true">race</span></label>
+            <select id="f-race" name="race" required></select>
+          </div>
+          <div class="field">
+            <label for="f-native-country"><span class="q">4</span>Country of origin
+              <span class="alias" aria-hidden="true">native-country</span></label>
+            <select id="f-native-country" name="native-country" required></select>
+          </div>
+          <div class="field">
+            <label for="f-marital-status"><span class="q">5</span>Marital status
+              <span class="alias" aria-hidden="true">marital-status</span></label>
+            <select id="f-marital-status" name="marital-status" required></select>
+          </div>
+          <div class="field">
+            <label for="f-relationship"><span class="q">6</span>Relationship in household
+              <span class="alias" aria-hidden="true">relationship</span></label>
+            <select id="f-relationship" name="relationship" required></select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Work</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="f-workclass"><span class="q">7</span>Type of employer
+              <span class="alias" aria-hidden="true">workclass</span></label>
+            <select id="f-workclass" name="workclass" required></select>
+          </div>
+          <div class="field">
+            <label for="f-occupation"><span class="q">8</span>Occupation
+              <span class="alias" aria-hidden="true">occupation</span></label>
+            <select id="f-occupation" name="occupation" required></select>
+          </div>
+          <div class="field">
+            <label for="f-hours-per-week"><span class="q">9</span>Hours worked per week
+              <span class="alias" aria-hidden="true">hours-per-week</span></label>
+            <input id="f-hours-per-week" name="hours-per-week" type="number"
+              min="1" max="168" inputmode="numeric" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Education and finances</legend>
+        <div class="grid">
+          <div class="field">
+            <label for="f-education"><span class="q">10</span>Highest education
+              <span class="alias" aria-hidden="true">education</span></label>
+            <select id="f-education" name="education" required></select>
+          </div>
+          <div class="field">
+            <label for="f-education-num"><span class="q">11</span>Years of education
+              <span class="alias" aria-hidden="true">education-num</span></label>
+            <input id="f-education-num" name="education-num" type="number"
+              min="1" max="16" inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="f-capital-gain"><span class="q">12</span>Capital gains (USD)
+              <span class="alias" aria-hidden="true">capital-gain</span></label>
+            <input id="f-capital-gain" name="capital-gain" type="number" min="0"
+              inputmode="numeric" required>
+          </div>
+          <div class="field">
+            <label for="f-capital-loss"><span class="q">13</span>Capital losses (USD)
+              <span class="alias" aria-hidden="true">capital-loss</span></label>
+            <input id="f-capital-loss" name="capital-loss" type="number" min="0"
+              inputmode="numeric" required>
+          </div>
+          <div class="field wide">
+            <label for="f-fnlgt"><span class="q">14</span>Final weight
+              <span class="alias" aria-hidden="true">fnlgt</span></label>
+            <input id="f-fnlgt" name="fnlgt" type="number" min="0"
+              inputmode="numeric" required>
+            <span class="help">How many people in the population this record
+              stands for; copied from the Census sample.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" id="submit-btn">Estimate income</button>
+        <span class="help" id="status-text"></span>
+      </div>
+    </form>
+
+    <aside class="result-panel" id="result-panel" aria-live="polite">
+      <h2>Estimate</h2>
+      <div id="error-box" hidden></div>
+      <p class="placeholder" id="placeholder">No estimate yet. Answer the
+        questions or load an example, then choose Estimate income.</p>
+      <div id="result" hidden>
+        <div class="stamp-wrap"><span class="stamp" id="stamp"></span></div>
+        <div class="meter">
+          <div class="meter-label">
+            <span>Probability of earning over 50K</span>
+            <strong id="prob-text"></strong>
+          </div>
+          <div class="bar">
+            <div class="fill" id="prob-fill"></div>
+            <div class="tick" aria-hidden="true"></div>
+          </div>
+          <p class="bar-caption">The line marks 50%. Above it the model
+            answers "over 50K".</p>
+        </div>
+        <details>
+          <summary>Raw response from POST /predict</summary>
+          <pre id="raw"></pre>
+        </details>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <span>Interactive API docs: <a href="/docs">/docs</a>.
+      Schema: <a href="/openapi.json">/openapi.json</a>.</span>
+    <span>Categories come from the fitted encoder via
+      <a href="/features">/features</a>.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var FEATURES_URL = "/features";
+  var PREDICT_URL = "/predict";
+  var SERVER_HINT = "Start the API with: python -m uvicorn main:app " +
+    "--host 127.0.0.1 --port 8000";
+  var NUMERIC = ["age", "fnlgt", "education-num", "capital-gain",
+    "capital-loss", "hours-per-week"];
+
+  var form = document.getElementById("predict-form");
+  var submitBtn = document.getElementById("submit-btn");
+  var statusText = document.getElementById("status-text");
+  var errorBox = document.getElementById("error-box");
+  var placeholder = document.getElementById("placeholder");
+  var result = document.getElementById("result");
+  var stamp = document.getElementById("stamp");
+  var probText = document.getElementById("prob-text");
+  var probFill = document.getElementById("prob-fill");
+  var raw = document.getElementById("raw");
+  var examples = {};
+
+  function control(name) { return form.elements.namedItem(name); }
+
+  function showError(title, items) {
+    errorBox.innerHTML = "";
+    var p = document.createElement("p");
+    p.textContent = title;
+    errorBox.appendChild(p);
+    if (items && items.length) {
+      var ul = document.createElement("ul");
+      items.forEach(function (text) {
+        var li = document.createElement("li");
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+      errorBox.appendChild(ul);
+    }
+    errorBox.className = "error";
+    errorBox.hidden = false;
+  }
+
+  function clearErrors() {
+    errorBox.hidden = true;
+    errorBox.innerHTML = "";
+    var invalid = form.querySelectorAll(".field.invalid");
+    Array.prototype.forEach.call(invalid, function (wrap) {
+      wrap.classList.remove("invalid");
+      var c = wrap.querySelector("input, select");
+      if (c) { c.removeAttribute("aria-invalid"); }
+    });
+  }
+
+  function markInvalid(name) {
+    var c = control(name);
+    var wrap = c ? c.closest(".field") : null;
+    if (!wrap) { return; }
+    wrap.classList.add("invalid");
+    c.setAttribute("aria-invalid", "true");
+  }
+
+  function ensureOption(select, value) {
+    for (var i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === value) { return; }
+    }
+    var opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = value;
+    select.appendChild(opt);
+  }
+
+  function fillSelect(name, values) {
+    var select = control(name);
+    if (!select) { return; }
+    select.innerHTML = "";
+    values.forEach(function (value) { ensureOption(select, String(value)); });
+  }
+
+  function applyExample(payload) {
+    Object.keys(payload).forEach(function (key) {
+      var c = control(key);
+      if (!c) { return; }
+      if (c.tagName === "SELECT") { ensureOption(c, String(payload[key])); }
+      c.value = String(payload[key]);
+    });
+    clearErrors();
+  }
+
+  function collectPayload() {
+    var payload = {};
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name) { return; }
+      if (NUMERIC.indexOf(el.name) !== -1) {
+        payload[el.name] = el.value.trim() === "" ? null : Number(el.value);
+      } else {
+        payload[el.name] = el.value;
+      }
+    });
+    return payload;
+  }
+
+  function render(data) {
+    var over = data.prediction === ">50K";
+    var pct = Math.round(data.probability_over_50k * 1000) / 10;
+    stamp.textContent = over ? "Over 50K" : "50K or less";
+    probText.textContent = pct.toFixed(1) + "%";
+    probFill.style.width = Math.max(0, Math.min(100, pct)) + "%";
+    raw.textContent = JSON.stringify(data, null, 2);
+    placeholder.hidden = true;
+    result.hidden = false;
+    stamp.classList.remove("pressed");
+    void stamp.offsetWidth;
+    stamp.classList.add("pressed");
+  }
+
+  function describeDetail(detail) {
+    if (!Array.isArray(detail)) { return detail ? [String(detail)] : []; }
+    return detail.map(function (item) {
+      var loc = Array.isArray(item.loc)
+        ? item.loc.filter(function (part) { return part !== "body"; })
+        : [];
+      var name = loc.length ? String(loc[loc.length - 1]) : "request";
+      if (loc.length) { markInvalid(name); }
+      return name + ": " + (item.msg || "invalid value");
+    });
+  }
+
+  function hideResult() {
+    result.hidden = true;
+    placeholder.hidden = false;
+  }
+
+  function loadFeatures() {
+    statusText.textContent = "Loading categories from the model...";
+    return fetch(FEATURES_URL).then(function (response) {
+      if (!response.ok) { throw new Error("HTTP " + response.status); }
+      return response.json();
+    }).then(function (data) {
+      Object.keys(data.categories || {}).forEach(function (name) {
+        fillSelect(name, data.categories[name]);
+      });
+      examples = data.examples || {};
+      if (examples.high_income) { applyExample(examples.high_income); }
+      statusText.textContent = "";
+    }).catch(function (error) {
+      statusText.textContent = "";
+      showError("Could not load the feature list from " + FEATURES_URL +
+        " (" + error.message + "). " + SERVER_HINT);
+    });
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    clearErrors();
+    submitBtn.disabled = true;
+    statusText.textContent = "Estimating...";
+    fetch(PREDICT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json",
+        "Accept": "application/json" },
+      body: JSON.stringify(collectPayload())
+    }).then(function (response) {
+      return response.text().then(function (text) {
+        var body;
+        try { body = text ? JSON.parse(text) : {}; }
+        catch (e) { body = { detail: text }; }
+        return { status: response.status, body: body };
+      });
+    }).then(function (res) {
+      if (res.status === 200) { render(res.body); return; }
+      hideResult();
+      if (res.status === 422) {
+        showError("The API rejected the form (HTTP 422). Fix these answers " +
+          "and try again:", describeDetail(res.body.detail));
+        return;
+      }
+      showError("The API answered HTTP " + res.status + ".",
+        describeDetail(res.body.detail));
+    }).catch(function (error) {
+      hideResult();
+      showError("The API did not respond (" + error.message + "). " +
+        SERVER_HINT);
+    }).then(function () {
+      submitBtn.disabled = false;
+      statusText.textContent = "";
+    });
+  });
+
+  var exampleButtons = document.querySelectorAll("[data-example]");
+  Array.prototype.forEach.call(exampleButtons, function (button) {
+    button.addEventListener("click", function () {
+      var payload = examples[button.getAttribute("data-example")];
+      if (payload) { applyExample(payload); hideResult(); }
+      else { showError("Examples load together with /features. " + SERVER_HINT); }
+    });
+  });
+
+  loadFeatures();
+})();
+</script>
+</body>
+</html>
