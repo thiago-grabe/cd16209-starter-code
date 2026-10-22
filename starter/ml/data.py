@@ -1,5 +1,82 @@
+"""Data loading, cleaning and preprocessing for the Census income model."""
+
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import LabelBinarizer, OneHotEncoder
+
+LABEL = "salary"
+
+CAT_FEATURES = [
+    "workclass",
+    "education",
+    "marital-status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "native-country",
+]
+
+CONTINUOUS_FEATURES = [
+    "age",
+    "fnlgt",
+    "education-num",
+    "capital-gain",
+    "capital-loss",
+    "hours-per-week",
+]
+
+# Column order of data/census.csv without the label. process_data keeps the
+# continuous columns in DataFrame order, so every caller must use this order.
+FEATURE_COLUMNS = [
+    "age",
+    "workclass",
+    "fnlgt",
+    "education",
+    "education-num",
+    "marital-status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "capital-gain",
+    "capital-loss",
+    "hours-per-week",
+    "native-country",
+]
+
+
+def clean_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Strip incidental whitespace from column names and text values.
+
+    Feature names (including their hyphens) and the meaning of every value
+    are preserved; only leading and trailing whitespace is removed. A
+    cleaned copy is returned and the input frame is left untouched.
+    """
+    cleaned = frame.copy()
+    cleaned.columns = [str(column).strip() for column in cleaned.columns]
+    text_columns = cleaned.select_dtypes(include=["object", "string"])
+    for column in text_columns.columns:
+        cleaned[column] = cleaned[column].str.strip()
+    return cleaned
+
+
+def load_data(path: str | Path) -> pd.DataFrame:
+    """Load the Census CSV, clean whitespace and order the columns.
+
+    Raises ``ValueError`` when an expected column is missing so that a wrong
+    file is reported by name instead of failing later inside the encoder.
+    """
+    frame = clean_frame(pd.read_csv(path, skipinitialspace=True))
+    expected = FEATURE_COLUMNS + [LABEL]
+    missing = [column for column in expected if column not in frame.columns]
+    if missing:
+        raise ValueError(
+            f"Missing expected columns in {path}: {', '.join(missing)}"
+        )
+    return frame[expected]
 
 
 def process_data(

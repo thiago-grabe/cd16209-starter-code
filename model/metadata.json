@@ -1,0 +1,92 @@
+{
+  "artifacts": {
+    "encoder": "encoder.pkl",
+    "label_binarizer": "lb.pkl",
+    "model": "model.pkl"
+  },
+  "categorical_features": [
+    "workclass",
+    "education",
+    "marital-status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "native-country"
+  ],
+  "continuous_features": [
+    "age",
+    "fnlgt",
+    "education-num",
+    "capital-gain",
+    "capital-loss",
+    "hours-per-week"
+  ],
+  "feature_columns": [
+    "age",
+    "workclass",
+    "fnlgt",
+    "education",
+    "education-num",
+    "marital-status",
+    "occupation",
+    "relationship",
+    "race",
+    "sex",
+    "capital-gain",
+    "capital-loss",
+    "hours-per-week",
+    "native-country"
+  ],
+  "hyperparameters": {
+    "categorical_features": "from_dtype",
+    "class_weight": null,
+    "early_stopping": false,
+    "interaction_cst": null,
+    "l2_regularization": 0.0,
+    "learning_rate": 0.1,
+    "loss": "log_loss",
+    "max_bins": 255,
+    "max_depth": null,
+    "max_features": 1.0,
+    "max_iter": 200,
+    "max_leaf_nodes": 31,
+    "min_samples_leaf": 20,
+    "monotonic_cst": null,
+    "n_iter_no_change": 10,
+    "random_state": 42,
+    "scoring": "loss",
+    "tol": 1e-07,
+    "validation_fraction": 0.1,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "label": "salary",
+  "label_classes": [
+    "<=50K",
+    ">50K"
+  ],
+  "metrics": {
+    "f1": 0.7274,
+    "precision": 0.7855,
+    "recall": 0.6773
+  },
+  "model_type": "HistGradientBoostingClassifier",
+  "n_features_processed": 108,
+  "n_rows": 32561,
+  "n_test": 6513,
+  "n_train": 26048,
+  "positive_label": ">50K",
+  "slice_output": "slice_output.txt",
+  "split": {
+    "random_state": 42,
+    "stratify": "salary",
+    "test_size": 0.2
+  },
+  "versions": {
+    "numpy": "2.3.3",
+    "pandas": "2.3.2",
+    "python": "3.13.8",
+    "scikit_learn": "1.7.2"
+  }
+}
