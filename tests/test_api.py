@@ -97,7 +97,12 @@ def test_post_predict_missing_field_returns_422(client, high_income_payload):
 
 @pytest.mark.parametrize(
     "field,value",
-    [("age", "forty"), ("hours-per-week", 0), ("education-num", 17)],
+    [
+        ("age", "forty"),
+        ("hours-per-week", 0),
+        ("education-num", 17),
+        ("fnlgt", 10**30),
+    ],
 )
 def test_post_predict_wrong_type_and_bounds_return_422(
     client, high_income_payload, field, value

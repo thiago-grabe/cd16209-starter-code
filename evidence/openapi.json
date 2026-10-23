@@ -308,6 +308,7 @@
           },
           "fnlgt": {
             "type": "integer",
+            "maximum": 2147483647.0,
             "minimum": 0.0,
             "title": "Fnlgt",
             "description": "Census final sampling weight"
@@ -351,12 +352,14 @@
           },
           "capital-gain": {
             "type": "integer",
+            "maximum": 2147483647.0,
             "minimum": 0.0,
             "title": "Capital-Gain",
             "description": "Capital gains in USD"
           },
           "capital-loss": {
             "type": "integer",
+            "maximum": 2147483647.0,
             "minimum": 0.0,
             "title": "Capital-Loss",
             "description": "Capital losses in USD"

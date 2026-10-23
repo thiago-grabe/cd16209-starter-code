@@ -203,9 +203,9 @@ Notes on the request model (`CensusInput` in `main.py`):
   JSON can be posted as is. Leading and trailing whitespace in strings is
   stripped.
 - Validation: a missing field, a wrong type or an out-of-range value (`age`
-  0 to 120, `education-num` 1 to 16, `hours-per-week` 1 to 168, non-negative
-  `fnlgt`, `capital-gain` and `capital-loss`) returns `422` with the field
-  named in `detail[].loc`.
+  0 to 120, `education-num` 1 to 16, `hours-per-week` 1 to 168, `fnlgt`,
+  `capital-gain` and `capital-loss` between 0 and 2,147,483,647) returns
+  `422` with the field named in `detail[].loc`.
 - Categories unseen in training (for example a new `native-country`) are
   accepted and encoded as all zeros by the fitted encoder
   (`handle_unknown="ignore"`), exactly as during evaluation.

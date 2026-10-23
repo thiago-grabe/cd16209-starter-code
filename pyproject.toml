@@ -17,6 +17,9 @@ source = ["."]
 branch = true
 omit = [
     ".venv/*",
+    "venv/*",
+    "env/*",
+    "build/*",
     "tests/*",
     "scripts/*",
     "setup.py",

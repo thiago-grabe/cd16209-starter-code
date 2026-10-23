@@ -17,6 +17,12 @@ MODEL_DIR = PROJECT_ROOT / "model"
 SMALL_CSV_ROWS = 1500
 
 
+@pytest.fixture(autouse=True)
+def default_api_key(monkeypatch):
+    """Tests assume the development key unless they set the variable."""
+    monkeypatch.delenv(main.API_KEY_ENV, raising=False)
+
+
 @pytest.fixture(scope="session")
 def artifacts():
     """The trained model and fitted preprocessing shipped under model/."""

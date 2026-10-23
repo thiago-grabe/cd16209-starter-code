@@ -42,6 +42,9 @@ API_KEY_HEADER_NAME = "X-API-Key"
 DEFAULT_DEV_API_KEY = "census-dev-key"
 
 WELCOME_MESSAGE = "Welcome to the Census Income Prediction API"
+# Upper bound for the open-ended counts: keeps values inside numpy int64
+# and matches the 32-bit range of the source data.
+MAX_COUNT = 2_147_483_647
 
 SalaryClass = Literal["<=50K", ">50K"]
 
@@ -62,7 +65,9 @@ class CensusInput(BaseModel):
 
     age: int = Field(ge=0, le=120, description="Age in years")
     workclass: str = Field(description="Type of employer, e.g. Private")
-    fnlgt: int = Field(ge=0, description="Census final sampling weight")
+    fnlgt: int = Field(
+        ge=0, le=MAX_COUNT, description="Census final sampling weight"
+    )
     education: str = Field(description="Highest education level")
     education_num: int = Field(
         alias="education-num",
@@ -78,10 +83,16 @@ class CensusInput(BaseModel):
     race: str = Field(description="Race as recorded in the Census")
     sex: str = Field(description="Sex as recorded in the Census")
     capital_gain: int = Field(
-        alias="capital-gain", ge=0, description="Capital gains in USD"
+        alias="capital-gain",
+        ge=0,
+        le=MAX_COUNT,
+        description="Capital gains in USD",
     )
     capital_loss: int = Field(
-        alias="capital-loss", ge=0, description="Capital losses in USD"
+        alias="capital-loss",
+        ge=0,
+        le=MAX_COUNT,
+        description="Capital losses in USD",
     )
     hours_per_week: int = Field(
         alias="hours-per-week",
