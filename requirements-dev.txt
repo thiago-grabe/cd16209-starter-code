@@ -1,0 +1,5 @@
+# Optional local tooling for measuring test coverage. Not used by
+# scripts/check.py and not installed in the Udacity Workspace.
+# Install with: python -m pip install -r requirements-dev.txt
+-r requirements.txt
+coverage==7.17.0

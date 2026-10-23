@@ -1,3 +1,35 @@
 [build-system]
 requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# Third-party deprecation emitted by starlette.testclient on import.
+filterwarnings = [
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning",
+]
+
+# Optional coverage tooling (requirements-dev.txt); not used by
+# scripts/check.py or the Workspace quality gate.
+[tool.coverage.run]
+source = ["."]
+branch = true
+omit = [
+    ".venv/*",
+    "venv/*",
+    "env/*",
+    "build/*",
+    "tests/*",
+    "scripts/*",
+    "setup.py",
+    "sanitycheck.py",
+]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_empty = true
+exclude_also = [
+    "if __name__ == .__main__.:",
+]
