@@ -1,0 +1,738 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Census Income Prediction API",
+    "description": "Predicts whether a person's annual income exceeds 50K from Census features using a trained HistGradientBoosting classifier. GET / and POST /predict are public; POST /predict/batch and GET /model/info require the X-API-Key header.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Welcome",
+        "description": "Return a welcome message and the main routes of this API.",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Liveness check",
+        "description": "Confirm the API is up and which model type is loaded.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/features": {
+      "get": {
+        "tags": [
+          "Model"
+        ],
+        "summary": "Accepted features",
+        "description": "List the features, the categories seen in training and examples.",
+        "operationId": "features_features_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeaturesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "tags": [
+          "Inference"
+        ],
+        "summary": "Predict whether income exceeds 50K",
+        "description": "Run the trained model on one record.\n\nHyphenated Census names (``education-num``, ``marital-status``,\n``capital-gain``, ``capital-loss``, ``hours-per-week``,\n``native-country``) are accepted as sent; snake_case field names work\ntoo. Categories unseen during training are encoded as all zeros.",
+        "operationId": "predict_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CensusInput"
+              },
+              "examples": {
+                "high_income": {
+                  "summary": "Likely to earn more than 50K",
+                  "value": {
+                    "age": 44,
+                    "workclass": "Private",
+                    "fnlgt": 198282,
+                    "education": "Bachelors",
+                    "education-num": 13,
+                    "marital-status": "Married-civ-spouse",
+                    "occupation": "Exec-managerial",
+                    "relationship": "Husband",
+                    "race": "White",
+                    "sex": "Male",
+                    "capital-gain": 15024,
+                    "capital-loss": 0,
+                    "hours-per-week": 60,
+                    "native-country": "United-States"
+                  }
+                },
+                "low_income": {
+                  "summary": "Likely to earn 50K or less",
+                  "value": {
+                    "age": 18,
+                    "workclass": "Private",
+                    "fnlgt": 183930,
+                    "education": "HS-grad",
+                    "education-num": 9,
+                    "marital-status": "Never-married",
+                    "occupation": "Other-service",
+                    "relationship": "Own-child",
+                    "race": "White",
+                    "sex": "Male",
+                    "capital-gain": 0,
+                    "capital-loss": 0,
+                    "hours-per-week": 12,
+                    "native-country": "United-States"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict/batch": {
+      "post": {
+        "tags": [
+          "Inference"
+        ],
+        "summary": "Predict several records (API key required)",
+        "description": "Score up to 1000 records in one request.",
+        "operationId": "predict_batch_predict_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchPredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchPredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/model/info": {
+      "get": {
+        "tags": [
+          "Model"
+        ],
+        "summary": "Training metadata (API key required)",
+        "description": "Return the metadata saved with the trained artifacts.",
+        "operationId": "model_info_model_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelInfo"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/ui": {
+      "get": {
+        "tags": [
+          "Frontend"
+        ],
+        "summary": "Web user interface",
+        "description": "Serve the single-page frontend that calls ``POST /predict``.",
+        "operationId": "ui_ui_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchPredictionRequest": {
+        "properties": {
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/CensusInput"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Instances"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instances"
+        ],
+        "title": "BatchPredictionRequest",
+        "description": "Several records to score in one call."
+      },
+      "BatchPredictionResponse": {
+        "properties": {
+          "predictions": {
+            "items": {
+              "$ref": "#/components/schemas/PredictionResponse"
+            },
+            "type": "array",
+            "title": "Predictions"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "predictions",
+          "count"
+        ],
+        "title": "BatchPredictionResponse",
+        "description": "Predictions in the same order as the submitted instances."
+      },
+      "CensusInput": {
+        "properties": {
+          "age": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 0.0,
+            "title": "Age",
+            "description": "Age in years"
+          },
+          "workclass": {
+            "type": "string",
+            "title": "Workclass",
+            "description": "Type of employer, e.g. Private"
+          },
+          "fnlgt": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Fnlgt",
+            "description": "Census final sampling weight"
+          },
+          "education": {
+            "type": "string",
+            "title": "Education",
+            "description": "Highest education level"
+          },
+          "education-num": {
+            "type": "integer",
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Education-Num",
+            "description": "Education level encoded as a number"
+          },
+          "marital-status": {
+            "type": "string",
+            "title": "Marital-Status",
+            "description": "Marital status"
+          },
+          "occupation": {
+            "type": "string",
+            "title": "Occupation",
+            "description": "Occupation category"
+          },
+          "relationship": {
+            "type": "string",
+            "title": "Relationship",
+            "description": "Relationship within household"
+          },
+          "race": {
+            "type": "string",
+            "title": "Race",
+            "description": "Race as recorded in the Census"
+          },
+          "sex": {
+            "type": "string",
+            "title": "Sex",
+            "description": "Sex as recorded in the Census"
+          },
+          "capital-gain": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capital-Gain",
+            "description": "Capital gains in USD"
+          },
+          "capital-loss": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capital-Loss",
+            "description": "Capital losses in USD"
+          },
+          "hours-per-week": {
+            "type": "integer",
+            "maximum": 168.0,
+            "minimum": 1.0,
+            "title": "Hours-Per-Week",
+            "description": "Hours worked per week"
+          },
+          "native-country": {
+            "type": "string",
+            "title": "Native-Country",
+            "description": "Country of origin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "age",
+          "workclass",
+          "fnlgt",
+          "education",
+          "education-num",
+          "marital-status",
+          "occupation",
+          "relationship",
+          "race",
+          "sex",
+          "capital-gain",
+          "capital-loss",
+          "hours-per-week",
+          "native-country"
+        ],
+        "title": "CensusInput",
+        "description": "One person's Census features, named exactly as in the dataset.",
+        "examples": [
+          {
+            "age": 44,
+            "capital-gain": 15024,
+            "capital-loss": 0,
+            "education": "Bachelors",
+            "education-num": 13,
+            "fnlgt": 198282,
+            "hours-per-week": 60,
+            "marital-status": "Married-civ-spouse",
+            "native-country": "United-States",
+            "occupation": "Exec-managerial",
+            "race": "White",
+            "relationship": "Husband",
+            "sex": "Male",
+            "workclass": "Private"
+          },
+          {
+            "age": 18,
+            "capital-gain": 0,
+            "capital-loss": 0,
+            "education": "HS-grad",
+            "education-num": 9,
+            "fnlgt": 183930,
+            "hours-per-week": 12,
+            "marital-status": "Never-married",
+            "native-country": "United-States",
+            "occupation": "Other-service",
+            "race": "White",
+            "relationship": "Own-child",
+            "sex": "Male",
+            "workclass": "Private"
+          }
+        ]
+      },
+      "FeaturesResponse": {
+        "properties": {
+          "feature_columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Feature Columns"
+          },
+          "continuous_features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Continuous Features"
+          },
+          "categorical_features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categorical Features"
+          },
+          "categories": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Categories"
+          },
+          "examples": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Examples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature_columns",
+          "continuous_features",
+          "categorical_features",
+          "categories",
+          "examples"
+        ],
+        "title": "FeaturesResponse",
+        "description": "Accepted features, known categories and example payloads."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "model_type": {
+            "type": "string",
+            "title": "Model Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "model_type"
+        ],
+        "title": "HealthResponse",
+        "description": "Liveness information."
+      },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "docs": {
+            "type": "string",
+            "title": "Docs"
+          },
+          "predict": {
+            "type": "string",
+            "title": "Predict"
+          },
+          "ui": {
+            "type": "string",
+            "title": "Ui"
+          },
+          "health": {
+            "type": "string",
+            "title": "Health"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "docs",
+          "predict",
+          "ui",
+          "health"
+        ],
+        "title": "MessageResponse",
+        "description": "Welcome message with the main routes of the API."
+      },
+      "ModelInfo": {
+        "properties": {
+          "model_type": {
+            "type": "string",
+            "title": "Model Type"
+          },
+          "hyperparameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Hyperparameters"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "label_classes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Label Classes"
+          },
+          "positive_label": {
+            "type": "string",
+            "title": "Positive Label"
+          },
+          "feature_columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Feature Columns"
+          },
+          "categorical_features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categorical Features"
+          },
+          "continuous_features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Continuous Features"
+          },
+          "n_features_processed": {
+            "type": "integer",
+            "title": "N Features Processed"
+          },
+          "n_rows": {
+            "type": "integer",
+            "title": "N Rows"
+          },
+          "n_train": {
+            "type": "integer",
+            "title": "N Train"
+          },
+          "n_test": {
+            "type": "integer",
+            "title": "N Test"
+          },
+          "split": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Split"
+          },
+          "metrics": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Metrics"
+          },
+          "versions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Versions"
+          },
+          "artifacts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Artifacts"
+          },
+          "slice_output": {
+            "type": "string",
+            "title": "Slice Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_type",
+          "hyperparameters",
+          "label",
+          "label_classes",
+          "positive_label",
+          "feature_columns",
+          "categorical_features",
+          "continuous_features",
+          "n_features_processed",
+          "n_rows",
+          "n_train",
+          "n_test",
+          "split",
+          "metrics",
+          "versions",
+          "artifacts",
+          "slice_output"
+        ],
+        "title": "ModelInfo",
+        "description": "Training metadata saved next to the model artifacts."
+      },
+      "PredictionResponse": {
+        "properties": {
+          "prediction": {
+            "type": "string",
+            "enum": [
+              "<=50K",
+              ">50K"
+            ],
+            "title": "Prediction",
+            "description": "Predicted salary class"
+          },
+          "probability_over_50k": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Probability Over 50K",
+            "description": "Model probability that the salary exceeds 50K"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prediction",
+          "probability_over_50k"
+        ],
+        "title": "PredictionResponse",
+        "description": "Prediction for one record."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "description": "API key for the protected routes. The development placeholder 'census-dev-key' is accepted unless CENSUS_API_KEY is set.",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}

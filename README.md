@@ -339,12 +339,25 @@ configuration lives in `pyproject.toml` under `[tool.coverage.run]` and
 branches; the script exits nonzero below that threshold, and with status 2
 when `coverage` is not installed. The quality gate itself is unchanged.
 
+Current report (`evidence/coverage.txt`, 72 tests):
+
+| File | Statements | Branches | Coverage |
+| --- | --- | --- | --- |
+| `main.py` | 132 | 4 | 100% |
+| `request.py` | 73 | 4 | 100% |
+| `starter/examples.py` | 4 | 0 | 100% |
+| `starter/ml/data.py` | 41 | 8 | 100% |
+| `starter/ml/model.py` | 73 | 14 | 100% |
+| `starter/ml/slices.py` | 35 | 8 | 100% |
+| `starter/train_model.py` | 63 | 2 | 100% |
+| Total | 421 | 40 | 100% |
+
 ### Evidence files
 
 | File | Contents |
 | --- | --- |
 | `evidence/validation.txt` | The `python scripts/check.py` command, its pytest and flake8 output and the line `exit status: 0` |
-| `evidence/http.txt` | The Uvicorn command, `curl` calls to `GET /` and `POST /predict` for both classes, both `request.py` invocations with their exit status, and `GET /model/info` with and without the API key |
+| `evidence/http.txt` | The Uvicorn command (started on port 8020 because ports 8000 and 8001 were taken by unrelated local services at capture time), `curl` calls to `GET /` and `POST /predict` for both classes, `python request.py --base-url http://127.0.0.1:8020` with its exit status, `GET /model/info` with and without the API key, and the server log |
 | `evidence/openapi.json` | The schema exported from the running server with `curl -s http://127.0.0.1:8000/openapi.json` and pretty-printed with `python -m json.tool`; it contains the `CensusInput` examples, the hyphenated aliases and the `APIKeyHeader` security scheme |
 | `evidence/coverage.txt` | The commands and report written by `python scripts/run_coverage.py` |
 

@@ -1,0 +1,24 @@
+$ python scripts/check.py
+Running pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.13.8, pytest-8.4.2, pluggy-1.7.0
+rootdir: /Users/73983/ws/grabe/cd16209-starter-code
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 72 items
+
+tests/test_api.py ................                                       [ 22%]
+tests/test_auth.py ........                                              [ 33%]
+tests/test_data.py ......                                                [ 41%]
+tests/test_docs.py ....                                                  [ 47%]
+tests/test_frontend.py ..                                                [ 50%]
+tests/test_model.py .............                                        [ 68%]
+tests/test_request.py ............                                       [ 84%]
+tests/test_slices.py .......                                             [ 94%]
+tests/test_train_model.py ....                                           [100%]
+
+======================== 72 passed in 64.60s (0:01:04) =========================
+Running flake8 --extend-exclude .venv
+Local tests and lint passed.
+exit status: 0

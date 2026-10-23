@@ -1,0 +1,23 @@
+$ python -m coverage erase
+exit status: 0
+
+$ python -m coverage run -m pytest -q
+........................................................................ [100%]
+72 passed in 105.64s (0:01:45)
+exit status: 0
+
+$ python -m coverage report -m
+Name                     Stmts   Miss Branch BrPart  Cover   Missing
+--------------------------------------------------------------------
+main.py                    132      0      4      0   100%
+request.py                  73      0      4      0   100%
+starter/examples.py          4      0      0      0   100%
+starter/ml/data.py          41      0      8      0   100%
+starter/ml/model.py         73      0     14      0   100%
+starter/ml/slices.py        35      0      8      0   100%
+starter/train_model.py      63      0      2      0   100%
+--------------------------------------------------------------------
+TOTAL                      421      0     40      0   100%
+
+2 empty files skipped.
+exit status: 0

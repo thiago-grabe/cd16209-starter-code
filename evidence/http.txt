@@ -1,0 +1,110 @@
+# Real HTTP requests against the locally running API.
+# The server was started on port 8020 because ports 8000 and 8001 were in
+# use by unrelated local services at capture time. The API has no fixed
+# port: the documented command uses --port 8000 and request.py defaults to
+# http://127.0.0.1:8000, hence the explicit --base-url below.
+
+# Terminal 1 (server, project root, .venv activated)
+$ python -m uvicorn main:app --host 127.0.0.1 --port 8020
+
+# Terminal 2 (client, project root, .venv activated)
+$ curl -s -i http://127.0.0.1:8020/
+HTTP/1.1 200 OK
+date: Fri, 23 Oct 2026 00:22:44 GMT
+server: uvicorn
+content-length: 123
+content-type: application/json
+
+{"message":"Welcome to the Census Income Prediction API","docs":"/docs","predict":"/predict","ui":"/ui","health":"/health"}
+
+$ curl -s -i -X POST http://127.0.0.1:8020/predict -H 'Content-Type: application/json' -d '{"age": 44, "workclass": "Private", "fnlgt": 198282, "education": "Bachelors", "education-num": 13, "marital-status": "Married-civ-spouse", "occupation": "Exec-managerial", "relationship": "Husband", "race": "White", "sex": "Male", "capital-gain": 15024, "capital-loss": 0, "hours-per-week": 60, "native-country": "United-States"}'
+HTTP/1.1 200 OK
+date: Fri, 23 Oct 2026 00:22:44 GMT
+server: uvicorn
+content-length: 63
+content-type: application/json
+
+{"prediction":">50K","probability_over_50k":0.9996509238924007}
+
+$ curl -s -i -X POST http://127.0.0.1:8020/predict -H 'Content-Type: application/json' -d '{"age": 18, "workclass": "Private", "fnlgt": 183930, "education": "HS-grad", "education-num": 9, "marital-status": "Never-married", "occupation": "Other-service", "relationship": "Own-child", "race": "White", "sex": "Male", "capital-gain": 0, "capital-loss": 0, "hours-per-week": 12, "native-country": "United-States"}'
+HTTP/1.1 200 OK
+date: Fri, 23 Oct 2026 00:22:44 GMT
+server: uvicorn
+content-length: 67
+content-type: application/json
+
+{"prediction":"<=50K","probability_over_50k":0.0002667996351108155}
+
+$ python request.py --base-url http://127.0.0.1:8020
+GET http://127.0.0.1:8020/
+status: 200
+body: {
+  "message": "Welcome to the Census Income Prediction API",
+  "docs": "/docs",
+  "predict": "/predict",
+  "ui": "/ui",
+  "health": "/health"
+}
+expected status 200 with a welcome message -> OK
+
+Case: earns more than 50K
+POST http://127.0.0.1:8020/predict
+payload: {"age": 44, "workclass": "Private", "fnlgt": 198282, "education": "Bachelors", "education-num": 13, "marital-status": "Married-civ-spouse", "occupation": "Exec-managerial", "relationship": "Husband", "race": "White", "sex": "Male", "capital-gain": 15024, "capital-loss": 0, "hours-per-week": 60, "native-country": "United-States"}
+status: 200
+body: {
+  "prediction": ">50K",
+  "probability_over_50k": 0.9996509238924007
+}
+expected prediction: >50K -> OK
+
+Case: earns 50K or less
+POST http://127.0.0.1:8020/predict
+payload: {"age": 18, "workclass": "Private", "fnlgt": 183930, "education": "HS-grad", "education-num": 9, "marital-status": "Never-married", "occupation": "Other-service", "relationship": "Own-child", "race": "White", "sex": "Male", "capital-gain": 0, "capital-loss": 0, "hours-per-week": 12, "native-country": "United-States"}
+status: 200
+body: {
+  "prediction": "<=50K",
+  "probability_over_50k": 0.0002667996351108155
+}
+expected prediction: <=50K -> OK
+
+All requests returned the expected results.
+exit status: 0
+
+# Stand-out: API-key protected route (not required by the rubric)
+$ curl -s -i -H 'X-API-Key: census-dev-key' http://127.0.0.1:8020/model/info
+HTTP/1.1 200 OK
+date: Fri, 23 Oct 2026 00:22:45 GMT
+server: uvicorn
+content-length: 1382
+content-type: application/json
+
+{"model_type":"HistGradientBoostingClassifier","hyperparameters":{"categorical_features":"from_dtype","class_weight":null,"early_stopping":false,"interaction_cst":null,"l2_regularization":0.0,"learning_rate":0.1,"loss":"log_loss","max_bins":255,"max_depth":null,"max_features":1.0,"max_iter":200,"max_leaf_nodes":31,"min_samples_leaf":20,"monotonic_cst":null,"n_iter_no_change":10,"random_state":42,"scoring":"loss","tol":1e-07,"validation_fraction":0.1,"verbose":0,"warm_start":false},"label":"salary","label_classes":["<=50K",">50K"],"positive_label":">50K","feature_columns":["age","workclass","fnlgt","education","education-num","marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hours-per-week","native-country"],"categorical_features":["workclass","education","marital-status","occupation","relationship","race","sex","native-country"],"continuous_features":["age","fnlgt","education-num","capital-gain","capital-loss","hours-per-week"],"n_features_processed":108,"n_rows":32561,"n_train":26048,"n_test":6513,"split":{"random_state":42,"stratify":"salary","test_size":0.2},"metrics":{"f1":0.7274,"precision":0.7855,"recall":0.6773},"versions":{"numpy":"2.3.3","pandas":"2.3.2","python":"3.13.8","scikit_learn":"1.7.2"},"artifacts":{"encoder":"encoder.pkl","label_binarizer":"lb.pkl","model":"model.pkl"},"slice_output":"slice_output.txt"}
+
+$ curl -s -i http://127.0.0.1:8020/model/info   # expected 401 without a key
+HTTP/1.1 401 Unauthorized
+date: Fri, 23 Oct 2026 00:22:45 GMT
+server: uvicorn
+www-authenticate: ApiKey
+content-length: 39
+content-type: application/json
+
+{"detail":"Invalid or missing API key"}
+
+# Terminal 1 server log for the requests above
+# INFO:     Started server process [92541]
+# INFO:     Waiting for application startup.
+# INFO:     Application startup complete.
+# INFO:     Uvicorn running on http://127.0.0.1:8020 (Press CTRL+C to quit)
+# INFO:     127.0.0.1:56630 - "GET / HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56631 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56632 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56640 - "GET / HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56640 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56640 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56642 - "GET /model/info HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:56643 - "GET /model/info HTTP/1.1" 401 Unauthorized
+# INFO:     127.0.0.1:56644 - "GET /openapi.json HTTP/1.1" 200 OK
+# INFO:     Shutting down
+# INFO:     Waiting for application shutdown.
+# INFO:     Application shutdown complete.
+# INFO:     Finished server process [92541]
