@@ -25,6 +25,17 @@ ALIASES = {
     "education-num", "marital-status", "capital-gain", "capital-loss",
     "hours-per-week", "native-country",
 }
+# Section headings of model_card_template.md. The template itself is not
+# part of the packaged submission, so the list is kept here as well.
+TEMPLATE_HEADINGS = [
+    "## Model Details",
+    "## Intended Use",
+    "## Training Data",
+    "## Evaluation Data",
+    "## Metrics",
+    "## Ethical Considerations",
+    "## Caveats and Recommendations",
+]
 
 
 def manifest_entries():
@@ -45,15 +56,14 @@ def test_submission_manifest_lists_artifacts_and_supporting_files():
 
 
 def test_model_card_complete_and_consistent(artifacts):
-    template = (PROJECT_ROOT / "model_card_template.md").read_text(
-        encoding="utf-8"
-    )
+    template = PROJECT_ROOT / "model_card_template.md"
+    if template.is_file():
+        lines = template.read_text(encoding="utf-8").splitlines()
+        assert [
+            line for line in lines if line.startswith("## ")
+        ] == TEMPLATE_HEADINGS
     card = (PROJECT_ROOT / "model_card.md").read_text(encoding="utf-8")
-    headings = [
-        line for line in template.splitlines() if line.startswith("## ")
-    ]
-    assert headings
-    for heading in headings:
+    for heading in TEMPLATE_HEADINGS:
         assert heading in card
     assert "HistGradientBoostingClassifier" in card
     metadata = artifacts.metadata

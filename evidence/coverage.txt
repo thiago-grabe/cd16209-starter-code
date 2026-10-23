@@ -3,7 +3,7 @@ exit status: 0
 
 $ python -m coverage run -m pytest -q
 ........................................................................ [100%]
-72 passed in 105.64s (0:01:45)
+72 passed in 140.83s (0:02:20)
 exit status: 0
 
 $ python -m coverage report -m
