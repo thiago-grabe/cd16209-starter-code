@@ -154,6 +154,11 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 | GET | `/ui` | none | Single-file web UI |
 | GET | `/docs`, `/openapi.json` | none | Swagger UI and the OpenAPI schema |
 
+`main.py` sets `OMP_NUM_THREADS=1` for the serving process unless the
+variable is already set: single-row inference gains nothing from OpenMP, and
+one thread team per request thread would oversubscribe the CPU under
+concurrent requests. Training is a separate process and keeps the default.
+
 `POST /predict` takes one record with the original Census feature names. The
 example below is a real row of `data/census.csv`; it is also the first
 example in the OpenAPI schema and in `/docs`:
@@ -343,14 +348,14 @@ Current report (`evidence/coverage.txt`, 73 tests):
 
 | File | Statements | Branches | Coverage |
 | --- | --- | --- | --- |
-| `main.py` | 133 | 4 | 100% |
+| `main.py` | 137 | 4 | 100% |
 | `request.py` | 73 | 4 | 100% |
 | `starter/examples.py` | 4 | 0 | 100% |
 | `starter/ml/data.py` | 41 | 8 | 100% |
 | `starter/ml/model.py` | 73 | 14 | 100% |
 | `starter/ml/slices.py` | 35 | 8 | 100% |
 | `starter/train_model.py` | 63 | 2 | 100% |
-| Total | 422 | 40 | 100% |
+| Total | 426 | 40 | 100% |
 
 ### Evidence files
 

@@ -10,7 +10,7 @@ $ python -m uvicorn main:app --host 127.0.0.1 --port 8020
 # Terminal 2 (client, project root, .venv activated)
 $ curl -s -i http://127.0.0.1:8020/
 HTTP/1.1 200 OK
-date: Fri, 23 Oct 2026 00:38:40 GMT
+date: Fri, 23 Oct 2026 00:48:02 GMT
 server: uvicorn
 content-length: 123
 content-type: application/json
@@ -19,7 +19,7 @@ content-type: application/json
 
 $ curl -s -i -X POST http://127.0.0.1:8020/predict -H 'Content-Type: application/json' -d '{"age": 44, "workclass": "Private", "fnlgt": 198282, "education": "Bachelors", "education-num": 13, "marital-status": "Married-civ-spouse", "occupation": "Exec-managerial", "relationship": "Husband", "race": "White", "sex": "Male", "capital-gain": 15024, "capital-loss": 0, "hours-per-week": 60, "native-country": "United-States"}'
 HTTP/1.1 200 OK
-date: Fri, 23 Oct 2026 00:38:40 GMT
+date: Fri, 23 Oct 2026 00:48:02 GMT
 server: uvicorn
 content-length: 63
 content-type: application/json
@@ -28,7 +28,7 @@ content-type: application/json
 
 $ curl -s -i -X POST http://127.0.0.1:8020/predict -H 'Content-Type: application/json' -d '{"age": 18, "workclass": "Private", "fnlgt": 183930, "education": "HS-grad", "education-num": 9, "marital-status": "Never-married", "occupation": "Other-service", "relationship": "Own-child", "race": "White", "sex": "Male", "capital-gain": 0, "capital-loss": 0, "hours-per-week": 12, "native-country": "United-States"}'
 HTTP/1.1 200 OK
-date: Fri, 23 Oct 2026 00:38:40 GMT
+date: Fri, 23 Oct 2026 00:48:02 GMT
 server: uvicorn
 content-length: 67
 content-type: application/json
@@ -73,7 +73,7 @@ exit status: 0
 # Stand-out: API-key protected route (not required by the rubric)
 $ curl -s -i -H 'X-API-Key: census-dev-key' http://127.0.0.1:8020/model/info
 HTTP/1.1 200 OK
-date: Fri, 23 Oct 2026 00:38:41 GMT
+date: Fri, 23 Oct 2026 00:48:02 GMT
 server: uvicorn
 content-length: 1382
 content-type: application/json
@@ -82,7 +82,7 @@ content-type: application/json
 
 $ curl -s -i http://127.0.0.1:8020/model/info   # expected 401 without a key
 HTTP/1.1 401 Unauthorized
-date: Fri, 23 Oct 2026 00:38:41 GMT
+date: Fri, 23 Oct 2026 00:48:02 GMT
 server: uvicorn
 www-authenticate: ApiKey
 content-length: 39
@@ -91,20 +91,20 @@ content-type: application/json
 {"detail":"Invalid or missing API key"}
 
 # Terminal 1 server log for the requests above
-# INFO:     Started server process [18748]
+# INFO:     Started server process [36819]
 # INFO:     Waiting for application startup.
 # INFO:     Application startup complete.
 # INFO:     Uvicorn running on http://127.0.0.1:8020 (Press CTRL+C to quit)
-# INFO:     127.0.0.1:60750 - "GET / HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60751 - "POST /predict HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60752 - "POST /predict HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60758 - "GET / HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60758 - "POST /predict HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60758 - "POST /predict HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60762 - "GET /model/info HTTP/1.1" 200 OK
-# INFO:     127.0.0.1:60763 - "GET /model/info HTTP/1.1" 401 Unauthorized
-# INFO:     127.0.0.1:60764 - "GET /openapi.json HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63051 - "GET / HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63053 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63054 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63056 - "GET / HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63056 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63056 - "POST /predict HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63057 - "GET /model/info HTTP/1.1" 200 OK
+# INFO:     127.0.0.1:63058 - "GET /model/info HTTP/1.1" 401 Unauthorized
+# INFO:     127.0.0.1:63059 - "GET /openapi.json HTTP/1.1" 200 OK
 # INFO:     Shutting down
 # INFO:     Waiting for application shutdown.
 # INFO:     Application shutdown complete.
-# INFO:     Finished server process [18748]
+# INFO:     Finished server process [36819]

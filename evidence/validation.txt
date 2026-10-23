@@ -18,7 +18,7 @@ tests/test_request.py ............                                       [ 84%]
 tests/test_slices.py .......                                             [ 94%]
 tests/test_train_model.py ....                                           [100%]
 
-============================= 73 passed in 24.64s ==============================
+============================== 73 passed in 2.89s ==============================
 Running flake8 --extend-exclude .venv
 Local tests and lint passed.
 exit status: 0

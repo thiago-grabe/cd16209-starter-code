@@ -12,6 +12,16 @@ The trained model and its fitted preprocessing are loaded once from the
 
 import functools
 import os
+
+# Single-row inference gains nothing from OpenMP, and one OpenMP thread team
+# per request thread would oversubscribe the CPU under concurrent requests.
+# Set before numpy and scikit-learn are imported; training runs in its own
+# process (python -m starter.train_model) and keeps the default threads.
+try:
+    os.environ["OMP_NUM_THREADS"]
+except KeyError:
+    os.environ["OMP_NUM_THREADS"] = "1"
+
 import secrets
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
