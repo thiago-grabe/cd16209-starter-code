@@ -148,13 +148,16 @@ def test_request_script_against_live_uvicorn(artifacts):
         target=server.run, kwargs={"sockets": [sock]}, daemon=True
     )
     thread.start()
-    deadline = time.monotonic() + 15
+    # Generous budgets: a loaded machine can take a while to import the
+    # app, load the artifacts and answer the first requests.
+    deadline = time.monotonic() + 120
     while not server.started and time.monotonic() < deadline:
         time.sleep(0.05)
     assert server.started, "uvicorn did not start"
     try:
-        argv = ["--base-url", f"http://127.0.0.1:{port}"]
+        base_url = f"http://127.0.0.1:{port}"
+        argv = ["--base-url", base_url, "--timeout", "120"]
         assert request_script.main(argv) == 0
     finally:
         server.should_exit = True
-        thread.join(10)
+        thread.join(30)

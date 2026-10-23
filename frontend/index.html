@@ -90,7 +90,7 @@
     font-size: 16px;
   }
   .btn-primary:hover { background: var(--steel); border-color: var(--steel); }
-  .btn-primary[disabled] { opacity: 0.6; cursor: progress; }
+  .btn-primary[aria-busy="true"] { opacity: 0.6; cursor: progress; }
   fieldset { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
   legend { font-size: 17px; font-weight: 700; padding: 0; margin-bottom: 10px; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
@@ -337,7 +337,7 @@
 
       <div class="actions">
         <button type="submit" class="btn-primary" id="submit-btn">Estimate income</button>
-        <span class="help" id="status-text"></span>
+        <span class="help" id="status-text" role="status" aria-live="polite"></span>
       </div>
     </form>
 
@@ -397,6 +397,7 @@
   var probFill = document.getElementById("prob-fill");
   var raw = document.getElementById("raw");
   var examples = {};
+  var busy = false;
 
   function control(name) { return form.elements.namedItem(name); }
 
@@ -529,8 +530,10 @@
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
+    if (busy) { return; }
+    busy = true;
     clearErrors();
-    submitBtn.disabled = true;
+    submitBtn.setAttribute("aria-busy", "true");
     statusText.textContent = "Estimating...";
     fetch(PREDICT_URL, {
       method: "POST",
@@ -559,7 +562,8 @@
       showError("The API did not respond (" + error.message + "). " +
         SERVER_HINT);
     }).then(function () {
-      submitBtn.disabled = false;
+      busy = false;
+      submitBtn.removeAttribute("aria-busy");
       statusText.textContent = "";
     });
   });
