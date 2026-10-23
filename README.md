@@ -339,18 +339,18 @@ configuration lives in `pyproject.toml` under `[tool.coverage.run]` and
 branches; the script exits nonzero below that threshold, and with status 2
 when `coverage` is not installed. The quality gate itself is unchanged.
 
-Current report (`evidence/coverage.txt`, 72 tests):
+Current report (`evidence/coverage.txt`, 73 tests):
 
 | File | Statements | Branches | Coverage |
 | --- | --- | --- | --- |
-| `main.py` | 132 | 4 | 100% |
+| `main.py` | 133 | 4 | 100% |
 | `request.py` | 73 | 4 | 100% |
 | `starter/examples.py` | 4 | 0 | 100% |
 | `starter/ml/data.py` | 41 | 8 | 100% |
 | `starter/ml/model.py` | 73 | 14 | 100% |
 | `starter/ml/slices.py` | 35 | 8 | 100% |
 | `starter/train_model.py` | 63 | 2 | 100% |
-| Total | 421 | 40 | 100% |
+| Total | 422 | 40 | 100% |
 
 ### Evidence files
 
