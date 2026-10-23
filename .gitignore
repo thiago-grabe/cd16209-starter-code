@@ -189,3 +189,6 @@ screenshots/*.jpeg
 *.pem
 secrets.json
 config.ini
+
+# Submission archives
+submission*.zip

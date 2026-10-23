@@ -53,3 +53,11 @@ The optional local `.venv` is excluded from linting, not unfinished source.
 The pristine starter is intentionally incomplete and is not expected to pass.
 `sanitycheck.py` remains optional interactive heuristic guidance, not a gate.
 This is automated local quality validation, not hosted CI/CD or cloud deployment.
+
+## Optional coverage tooling
+
+Test coverage uses `coverage`, which `requirements.txt` does not include.
+After activating the local environment, run
+`python -m pip install -r requirements-dev.txt`, then
+`python scripts/run_coverage.py` to write `evidence/coverage.txt`. This is
+not a Workspace step, and `scripts/check.py` does not use it.
