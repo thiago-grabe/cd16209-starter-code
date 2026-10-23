@@ -194,23 +194,20 @@ def predict_labels(
 
     The frame is reordered to the training column order before the fitted
     encoder transforms it. Categories unseen during training are encoded as
-    all zeros, exactly as during evaluation; scikit-learn's warning about
-    them is silenced here because that behaviour is intended.
+    all zeros by the fitted encoder (``handle_unknown="ignore"``), exactly
+    as during evaluation.
     """
     missing = [column for column in FEATURE_COLUMNS if column not in frame]
     if missing:
         raise ValueError(f"Missing feature columns: {', '.join(missing)}")
-    ordered = frame[FEATURE_COLUMNS]
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        X, _, _, _ = process_data(
-            ordered,
-            categorical_features=CAT_FEATURES,
-            label=None,
-            training=False,
-            encoder=artifacts.encoder,
-            lb=artifacts.lb,
-        )
+    X, _, _, _ = process_data(
+        frame[FEATURE_COLUMNS],
+        categorical_features=CAT_FEATURES,
+        label=None,
+        training=False,
+        encoder=artifacts.encoder,
+        lb=artifacts.lb,
+    )
     preds = inference(artifacts.model, X)
     probabilities = artifacts.model.predict_proba(X)[:, 1]
     labels = artifacts.lb.inverse_transform(preds)

@@ -5,6 +5,10 @@ build-backend = "setuptools.build_meta"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# Third-party deprecation emitted by starlette.testclient on import.
+filterwarnings = [
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning",
+]
 
 # Optional coverage tooling (requirements-dev.txt); not used by
 # scripts/check.py or the Workspace quality gate.

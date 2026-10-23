@@ -1,0 +1,13 @@
+# Trained model and fitted preprocessing, loaded by main.py through
+# starter.ml.model.load_artifacts (see README.md, "Model artifacts").
+model/model.pkl
+model/encoder.pkl
+model/lb.pkl
+model/metadata.json
+# Stand-out: single-file web UI served at GET /ui
+frontend/index.html
+# Stand-out: optional coverage tooling (not used by scripts/check.py or
+# the Workspace quality gate)
+requirements-dev.txt
+scripts/run_coverage.py
+evidence/coverage.txt
